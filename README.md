@@ -8,7 +8,7 @@ Prediction of GHGs by using a regression model and a previously available (2010-
 
 Combined data for both commodities and industries. Reason: To have a comprehensive view of emissions across years and sectors.
 
-🗂 2. Preprocessing: Checked columns and identified missing values.
+ 2. Preprocessing: Checked columns and identified missing values.
 
 Dropped columns with too many missing entries.
 
@@ -18,7 +18,9 @@ Filled remaining gaps with statistical values (median for numbers, mode for text
 
 Included libraries for plotting and evaluation. Reason: To enable future prediction, trend detection, and “what‑if” analyses.
 
-🌱 Overall Benefit: This project allows engineers and analysts to quickly:
+
+
+ Overall Benefit: This project allows engineers and analysts to quickly:
 
 Understand GHG emission trends across industries and commodities.
 
