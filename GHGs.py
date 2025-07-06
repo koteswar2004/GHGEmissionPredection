@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.model_selection import cross_val_score
 
 excel_file = r"C:\Users\Hanu\Downloads\af60b10b8dad38110304.xlsx"
 years = range(2010, 2017)
@@ -101,3 +102,73 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
+#week3
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+X_scaled = pd.DataFrame(X_scaled, columns=X.columns)
+
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+RF_model = RandomForestRegressor(random_state=42)
+RF_model.fit(X_train, y_train)
+RF_y_pred = RF_model.predict(X_test)
+RF_mse = mean_squared_error(y_test, RF_y_pred)
+RF_rmse = np.sqrt(RF_mse)
+RF_r2 = r2_score(y_test, RF_y_pred)
+
+
+LR_model = LinearRegression()
+LR_model.fit(X_train, y_train)
+LR_y_pred = LR_model.predict(X_test)
+LR_mse = mean_squared_error(y_test, LR_y_pred)
+LR_rmse = np.sqrt(LR_mse)
+LR_r2 = r2_score(y_test, LR_y_pred)
+
+
+param_grid = {
+    'n_estimators': [100, 200],
+    'max_depth': [None, 10, 20],
+    'min_samples_split': [2, 5]
+}
+
+grid_search = GridSearchCV(RandomForestRegressor(random_state=42), param_grid, cv=3, n_jobs=-1)
+grid_search.fit(X_train, y_train)
+
+best_model = grid_search.best_estimator_
+y_pred_best = best_model.predict(X_test)
+HP_mse = mean_squared_error(y_test, y_pred_best)
+HP_rmse = np.sqrt(HP_mse)
+HP_r2 = r2_score(y_test, y_pred_best)
+
+
+results = {
+    'Model': ['Random Forest (Default)', 'Linear Regression', 'Random Forest (Tuned)'],
+    'MSE': [RF_mse, LR_mse, HP_mse],
+    'RMSE': [RF_rmse, LR_rmse, HP_rmse],
+    'R2': [RF_r2, LR_r2, HP_r2]
+}
+
+comparison_df = pd.DataFrame(results)
+print("\nModel Comparison:\n", comparison_df)
+
+
+cv_scores = cross_val_score(best_model, X_train, y_train, cv=5, scoring='r2')
+print("\nCross-Validation R² Scores:", cv_scores)
+print("Average CV R² Score:", np.mean(cv_scores))
+
+
+plt.figure(figsize=(6, 6))
+plt.scatter(y_test, y_pred_best, alpha=0.5, color='green')
+plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], '--', color='red')
+plt.xlabel("Actual Emission")
+plt.ylabel("Predicted Emission")
+plt.title("Actual vs Predicted Emission (Tuned Random Forest)")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+
+os.makedirs('models', exist_ok=True)
+joblib.dump(best_model, 'models/RF_best_model.pkl')
+joblib.dump(scaler, 'models/scaler.pkl')
